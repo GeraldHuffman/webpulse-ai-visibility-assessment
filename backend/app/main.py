@@ -9,6 +9,9 @@ from loguru import logger
 from app.api.routes import router
 from app.core.config import get_settings
 from app.core.logging import get_logger
+from app.models.database import Base, get_engine
+# Import all models so they register with Base
+from app.models.orm import Assessment, SiteSignal, Report, Lead, EmailLog, ScheduledCall
 
 settings = get_settings()
 logger = get_logger()
@@ -17,6 +20,14 @@ logger = get_logger()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info(f"Starting WebPulse Assessment API ({settings.app_env})")
+    # Auto-create tables on startup
+    try:
+        engine = get_engine()
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("Database tables created/verified")
+    except Exception as e:
+        logger.warning(f"Could not create tables on startup: {e}")
     yield
     logger.info("Shutting down WebPulse Assessment API")
 
@@ -36,8 +47,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Routes
-# Root route for Railway health checks
+# Root routes for health checks
 @app.get("/")
 async def root():
     return {"status": "healthy", "service": "webpulse-assessment-api"}
@@ -46,6 +56,7 @@ async def root():
 async def health_root():
     return {"status": "healthy", "service": "webpulse-assessment-api"}
 
+# API routes
 app.include_router(router)
 
 logger.info(f"CORS origins: {settings.cors_origin_list}")
