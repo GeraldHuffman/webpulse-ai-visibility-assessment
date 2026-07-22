@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { createAssessment, subscribeToProgress, type ProgressUpdate } from "@/lib/api";
 
 type Step = "landing" | "business" | "questionnaire" | "processing" | "report" | "schedule";
@@ -77,8 +77,8 @@ export default function Home() {
         () => setTimeout(() => setStep("report"), 500),
         (err) => setError(err.message),
       );
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
       setStep("business");
     }
   };
@@ -360,7 +360,7 @@ function ReportPage({ assessmentId, onSchedule }: { assessmentId: string; onSche
         try {
           const r = await fetch(`/api/v1/assessments/${assessmentId}/report`);
           if (r.ok) { setReport(await r.json()); setLoading(false); return; }
-        } catch {}
+        } catch (e) { /* retry */ }
         await new Promise((res) => setTimeout(res, 2000));
       }
       setError("Report is still generating. Check your email — we'll send it when it's ready.");
