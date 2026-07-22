@@ -21,6 +21,10 @@ PRIVATE_NETWORKS = [
 
 def validate_url(url: str) -> str:
     """Validate a URL for SSRF safety. Returns normalized URL or raises ValueError."""
+    # Auto-prepend https:// if no scheme present
+    if not url.startswith("http://") and not url.startswith("https://"):
+        url = "https://" + url
+
     parsed = urlparse(url)
     if parsed.scheme not in ("http", "https"):
         raise ValueError(f"URL scheme must be http or https, got {parsed.scheme}")
