@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     calendly_webhook_signing_key: str = ""
 
     resend_api_key: str = ""
-    email_from: str = "WebPulse <reports@webpulsehq.com>"
+    email_from: str = "WebPulse <team@webpulsehq.com>"
 
     jwt_secret: str = "dev-only-change-me"
     recaptcha_secret: str = ""
