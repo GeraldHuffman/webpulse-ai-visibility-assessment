@@ -73,27 +73,35 @@ export function subscribeToProgress(
   onUpdate: (data: ProgressUpdate) => void,
   onComplete: () => void,
   onError: (err: Error) => void,
-): EventSource {
-  const es = new EventSource(`${API_BASE}/assessments/${assessmentId}/status`);
-  es.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data);
-      onUpdate(data);
-      if (data.step === "completed" || data.progress >= 100) {
-        es.close();
-        onComplete();
-      } else if (data.step?.startsWith("failed")) {
-        es.close();
-        onError(new Error(data.step));
+): void {
+  // Use polling instead of SSE for better reliability
+  let attempts = 0;
+  const poll = async () => {
+    while (attempts < 120) {
+      try {
+        const resp = await fetch(`${API_BASE}/assessments/${assessmentId}`);
+        if (resp.ok) {
+          const assessment = await resp.json();
+          if (assessment.status === "completed") {
+            onUpdate({ progress: 100, step: "completed" });
+            onComplete();
+            return;
+          }
+          if (assessment.status === "failed") {
+            onError(new Error("Assessment failed"));
+            return;
+          }
+          // Still processing - estimate progress
+          const progress = Math.min(90, attempts * 3);
+          onUpdate({ progress, step: assessment.status || "processing" });
+        }
+      } catch (e) {
+        // Keep polling
       }
-    } catch (e) {
-      es.close();
-      onError(new Error("Failed to parse progress data"));
+      attempts++;
+      await new Promise((res) => setTimeout(res, 2000));
     }
+    onError(new Error("Timed out waiting for results"));
   };
-  es.onerror = () => {
-    es.close();
-    onError(new Error("Connection lost"));
-  };
-  return es;
+  poll();
 }

@@ -113,16 +113,27 @@ async def get_assessment(assessment_id: str, db: AsyncSession = Depends(get_db))
 async def get_status_sse(assessment_id: str):
     """SSE endpoint for live progress updates during analysis."""
     async def event_stream():
+        import time
+        sent_count = 0
         while True:
             progress = await get_progress(assessment_id)
             data = json.dumps(progress)
             yield f"data: {data}\\n\\n"
+            sent_count += 1
 
             if progress.get("step") in ("completed", "failed") or progress.get("progress", 0) >= 100:
                 break
+            # Timeout after 120 seconds
+            if sent_count > 120:
+                yield f"data: {json.dumps({"progress": 0, "step": "timeout"})}\\n\\n"
+                break
             await asyncio.sleep(1)
 
-    return StreamingResponse(event_stream, media_type="text/event-stream")
+    return StreamingResponse(event_stream, media_type="text/event-stream", headers={
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+        "X-Accel-Buffering": "no",
+    })
 
 
 @router.get("/assessments/{assessment_id}/report")
