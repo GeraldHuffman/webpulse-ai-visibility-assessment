@@ -1,15 +1,12 @@
 FROM python:3.13-slim
 
+# Cache bust - forces fresh build
+ARG CACHE_BUST=1
+
 WORKDIR /app
 
-# Install uv for fast dependency management
-RUN pip install --no-cache-dir uv
-
-# Copy only pyproject.toml first for layer caching
-COPY pyproject.toml .
-
-# Install dependencies
-RUN uv pip install --system --no-cache-dir fastapi uvicorn[standard] httpx beautifulsoup4 lxml pydantic pydantic-settings sqlalchemy asyncpg alembic arq redis openai psycopg2-binary resend python-multipart email-validator loguru tenacity
+# Install all dependencies explicitly
+RUN pip install --no-cache-dir fastapi uvicorn[standard] httpx beautifulsoup4 lxml pydantic pydantic-settings sqlalchemy asyncpg alembic arq redis openai psycopg2-binary resend python-multipart email-validator loguru tenacity
 
 # Copy application code
 COPY . .
