@@ -433,6 +433,22 @@ function ReportPage({ assessmentId, onSchedule }: { assessmentId: string; onSche
           <p className="text-lg text-gray-300 max-w-2xl mx-auto">{report.summary}</p>
         </motion.div>
 
+        {/* Current State */}
+        {report.current_state && (
+          <div className="bg-webpulse-card rounded-xl p-6 mb-8 border-l-4 border-webpulse-purple">
+            <h3 className="text-lg font-bold mb-2 text-webpulse-teal">Where You Stand Today</h3>
+            <p className="text-gray-400 leading-relaxed">{report.current_state}</p>
+          </div>
+        )}
+
+        {/* Big Opportunity */}
+        {report.big_opportunity && (
+          <div className="bg-gradient-to-br from-webpulse-darker to-webpulse-card rounded-2xl p-8 mb-12 border border-webpulse-pink/30">
+            <h3 className="text-xl font-bold mb-3 text-webpulse-pink">The Big Opportunity</h3>
+            <p className="text-gray-300 leading-relaxed text-lg">{report.big_opportunity}</p>
+          </div>
+        )}
+
         {/* Category Scores */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
           {Object.entries(report.category_scores || {}).map(([key, val]: [string, any]) => (
