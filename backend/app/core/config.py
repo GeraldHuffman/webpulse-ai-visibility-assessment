@@ -3,6 +3,7 @@
 from functools import lru_cache
 from typing import Literal
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -35,6 +36,14 @@ class Settings(BaseSettings):
 
     rate_limit_per_ip: int = 3
     rate_limit_per_email: int = 5
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def normalize_db_url(cls, v: str) -> str:
+        """Auto-convert postgresql:// to postgresql+asyncpg:// for async support."""
+        if isinstance(v, str) and v.startswith("postgresql://"):
+            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return v
 
     @property
     def cors_origin_list(self) -> list[str]:

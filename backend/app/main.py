@@ -37,6 +37,15 @@ app.add_middleware(
 )
 
 # Routes
+# Root route for Railway health checks
+@app.get("/")
+async def root():
+    return {"status": "healthy", "service": "webpulse-assessment-api"}
+
+@app.get("/health")
+async def health_root():
+    return {"status": "healthy", "service": "webpulse-assessment-api"}
+
 app.include_router(router)
 
 logger.info(f"CORS origins: {settings.cors_origin_list}")
