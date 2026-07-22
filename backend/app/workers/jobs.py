@@ -148,4 +148,14 @@ async def run_assessment(ctx: dict, assessment_id: str) -> None:
 class WorkerSettings:
     """ARQ worker settings."""
     functions = [run_assessment]
-    redis_settings = RedisSettings.from_dsn(settings.redis_url)
+
+    @property
+    def redis_settings(self):
+        # Handle rediss:// (TLS) scheme from Upstash - ARQ needs redis://
+        url = settings.redis_url
+        if url.startswith("rediss://"):
+            # ARQ/Redis supports rediss:// natively in newer versions
+            # but RedisSettings.from_dsn may not - use RedisSettings directly
+            from arq.connections import RedisSettings
+            return RedisSettings(host=url)
+        return RedisSettings.from_dsn(url)
