@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createAssessment, subscribeToProgress, type ProgressUpdate } from "@/lib/api";
 
 type Step = "landing" | "business" | "questionnaire" | "processing" | "report" | "schedule";
 
-interface FormData {
+interface AssessmentFormData {
   company_name: string;
   website_url: string;
   email: string;
@@ -51,7 +51,7 @@ const GOALS = [
 
 export default function Home() {
   const [step, setStep] = useState<Step>("landing");
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<AssessmentFormData>({
     company_name: "", website_url: "", email: "", phone: "",
     industry: "", target_audience: "", content_frequency: "",
     traffic_sources: [], competitors: [], goals: [], consent: false,
@@ -353,7 +353,7 @@ function ReportPage({ assessmentId, onSchedule }: { assessmentId: string; onSche
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useState(() => {
+  useEffect(() => {
     // Poll for report
     const poll = async () => {
       for (let i = 0; i < 30; i++) {
@@ -367,7 +367,7 @@ function ReportPage({ assessmentId, onSchedule }: { assessmentId: string; onSche
       setLoading(false);
     };
     poll();
-  });
+  }, [assessmentId]);
 
   if (loading) {
     return (
