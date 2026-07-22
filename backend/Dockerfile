@@ -9,7 +9,7 @@ RUN pip install --no-cache-dir uv
 COPY pyproject.toml .
 
 # Install dependencies
-RUN uv pip install --system --no-cache-dir fastapi uvicorn[standard] httpx beautifulsoup4 lxml pydantic pydantic-settings sqlalchemy asyncpg alembic arq redis openai resend python-multipart email-validator loguru tenacity
+RUN uv pip install --system --no-cache-dir fastapi uvicorn[standard] httpx beautifulsoup4 lxml pydantic pydantic-settings sqlalchemy asyncpg alembic arq redis openai psycopg2-binary resend python-multipart email-validator loguru tenacity
 
 # Copy application code
 COPY . .
