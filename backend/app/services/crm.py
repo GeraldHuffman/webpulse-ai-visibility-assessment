@@ -34,7 +34,7 @@ Summary:
 
 Top Actions:
 """
-    for action in report.get("actions", [])[:3]:
+    for action in (report.actions or [])[:3]:
         desc = action.get("description", "") if isinstance(action, dict) else str(action)
         title = action.get("title", "") if isinstance(action, dict) else ""
         description += f"  {title}: {desc}\\n"

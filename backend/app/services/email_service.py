@@ -15,7 +15,7 @@ def _report_email_html(assessment: Assessment, report: Report, settings: Setting
     score_color = "#00d4a1" if score >= 70 else "#7209B7" if score >= 40 else "#F72585"
 
     actions_html = ""
-    for action in report.get("actions", [])[:3]:
+    for action in (report.actions or [])[:3]:
         a = action if isinstance(action, dict) else {}
         actions_html += f"""
         <tr>
@@ -46,12 +46,12 @@ def _report_email_html(assessment: Assessment, report: Report, settings: Setting
 
     <div style="padding:20px; background:#15001f; border-radius:12px; margin-bottom:24px; border-left:4px solid #7209B7;">
       <p style="color:#00d4a1; font-size:13px; font-weight:bold; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px;">Where You Stand Today</p>
-      <p style="color:#ccc; font-size:14px; line-height:1.6;">{report.get("current_state", "")}</p>
+      <p style="color:#ccc; font-size:14px; line-height:1.6;">{getattr(report, "current_state", "") or ""}</p>
     </div>
 
     <div style="padding:20px; background:linear-gradient(135deg, #15001f, #2d0a4e); border-radius:12px; margin-bottom:32px; border:1px solid rgba(247,37,133,0.3);">
       <p style="color:#F72585; font-size:13px; font-weight:bold; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px;">The Big Opportunity</p>
-      <p style="color:#ddd; font-size:14px; line-height:1.6;">{report.get("big_opportunity", "")}</p>
+      <p style="color:#ddd; font-size:14px; line-height:1.6;">{getattr(report, "big_opportunity", "") or ""}</p>
     </div>
 
     <h2 style="color:#00d4a1; font-size:20px; margin-bottom:16px;">Top Actions to Improve</h2>
