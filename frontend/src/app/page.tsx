@@ -67,7 +67,7 @@ export default function Home() {
     setProgress({ progress: 0, step: "Starting..." });
 
     try {
-      const assessment = await createAssessment(formData);
+      const assessment = await createAssessment(formData as unknown as Record<string, unknown>);
       setAssessmentId(assessment.id);
 
       // Subscribe to progress updates
