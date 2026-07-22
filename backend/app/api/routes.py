@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime, timezone
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from loguru import logger
 from sqlalchemy import select
@@ -29,7 +29,12 @@ router = APIRouter(prefix="/api/v1")
 
 
 @router.post("/assessments", response_model=AssessmentResponse, status_code=201)
-async def create_assessment(data: AssessmentCreate, db: AsyncSession = Depends(get_db)):
+async def create_assessment(
+    data: AssessmentCreate,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
     """Create a new assessment and trigger analysis."""
     # Validate URL for SSRF safety
     try:
@@ -63,9 +68,8 @@ async def create_assessment(data: AssessmentCreate, db: AsyncSession = Depends(g
 
     logger.info(f"Created assessment {assessment.id} for {assessment.company_name}")
 
-    # Trigger background analysis (in production: enqueue ARQ job)
-    # For now, we trigger it as a background task
-    asyncio.create_task(_trigger_analysis(str(assessment.id)))
+    # Trigger analysis as a FastAPI BackgroundTask
+    background_tasks.add_task(_trigger_analysis, str(assessment.id))
 
     return AssessmentResponse(
         id=assessment.id,
@@ -80,12 +84,31 @@ async def create_assessment(data: AssessmentCreate, db: AsyncSession = Depends(g
 async def _trigger_analysis(assessment_id: str):
     """Trigger the analysis background job."""
     from app.workers.jobs import run_assessment
+    import traceback
     try:
+        logger.info(f"Starting background analysis for {assessment_id}")
         await run_assessment({}, assessment_id)
+        logger.info(f"Background analysis completed for {assessment_id}")
     except Exception as e:
-        import traceback
         logger.error(f"Background analysis failed: {e}")
         logger.error(traceback.format_exc())
+        # Update assessment status to failed
+        try:
+            from app.models.database import get_session_maker
+            from app.models.orm import Assessment as AssessmentModel
+            from sqlalchemy import select
+            maker = get_session_maker()
+            async with maker() as session:
+                result = await session.execute(
+                    select(AssessmentModel).where(AssessmentModel.id == uuid.UUID(assessment_id))
+                )
+                a = result.scalar_one_or_none()
+                if a:
+                    a.status = "failed"
+                    await session.commit()
+                    logger.info(f"Updated assessment {assessment_id} status to failed")
+        except Exception as db_err:
+            logger.error(f"Failed to update status: {db_err}")
 
 
 @router.get("/assessments/{assessment_id}")
