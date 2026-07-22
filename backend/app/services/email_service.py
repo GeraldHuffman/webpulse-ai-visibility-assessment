@@ -86,8 +86,10 @@ def _report_email_html(assessment: Assessment, report: Report, settings: Setting
 async def send_report_ready_email(assessment: Assessment, report: Report, settings: Settings) -> None:
     """Send the report-ready notification email via Resend."""
     if not settings.resend_api_key:
-        logger.info("Email send skipped: Resend not configured")
+        logger.warning("Email send skipped: RESEND_API_KEY not set in environment")
         return
+    
+    logger.info(f"Sending report email to {assessment.email} via Resend")
 
     html = _report_email_html(assessment, report, settings)
 
@@ -109,4 +111,5 @@ async def send_report_ready_email(assessment: Assessment, report: Report, settin
         if resp.status_code in (200, 202):
             logger.info(f"Report email sent to {assessment.email}")
         else:
-            logger.error(f"Email send failed: {resp.status_code} {resp.text[:200]}")
+            logger.error(f"Email send failed: {resp.status_code} - {resp.text[:500]}")
+            logger.error(f"From: {settings.email_from}, To: {assessment.email}")
