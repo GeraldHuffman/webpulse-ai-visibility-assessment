@@ -75,7 +75,7 @@ export default function Home() {
         assessment.id,
         (data) => setProgress(data),
         () => setTimeout(() => setStep("report"), 500),
-        (err) => setError(err.message),
+        (err: Error) => setError(err.message),
       );
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : String(err));
