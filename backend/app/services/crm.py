@@ -43,6 +43,7 @@ Top Actions:
 Assessment URL: {settings.app_url}/report/{assessment.id}
 """
 
+    logger.info(f"ClickUp: creating task in list {settings.clickup_list_id}")
     async with httpx.AsyncClient(timeout=15.0) as client:
         resp = await client.post(
             f"{CLICKUP_API}/list/{settings.clickup_list_id}/task",
