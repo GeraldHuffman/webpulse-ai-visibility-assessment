@@ -83,7 +83,9 @@ async def _trigger_analysis(assessment_id: str):
     try:
         await run_assessment({}, assessment_id)
     except Exception as e:
+        import traceback
         logger.error(f"Background analysis failed: {e}")
+        logger.error(traceback.format_exc())
 
 
 @router.get("/assessments/{assessment_id}")
