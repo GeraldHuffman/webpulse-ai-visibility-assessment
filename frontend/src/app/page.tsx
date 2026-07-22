@@ -333,8 +333,8 @@ export default function Home() {
           </p>
           {/* Calendly embed */}
           <div className="bg-webpulse-card rounded-2xl p-2">
-            <div className="calendly-inline-widget" data-url="https://calendly.com/webpulse/30min"
-              style={{ minWidth: 320, height: 600 }} />
+            <div className="calendly-inline-widget" data-url="https://calendly.com/gerald-webpulse/30min"
+              style={{ minWidth: 320, height: 700 }} />
           </div>
           <p className="text-gray-500 text-sm mt-4">
             Prefer email? Your full report has been sent to your inbox.
