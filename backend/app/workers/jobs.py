@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
-from app.models.database import async_session
+from app.models.database import get_session_maker
 from app.models.orm import Assessment, Report, SiteSignal, Lead
 from app.services.analysis_engine import collect_all_signals
 from app.services.ai_workflow import generate_report
@@ -43,7 +43,7 @@ async def run_assessment(ctx: dict, assessment_id: str) -> None:
     assessment_uuid = uuid.UUID(assessment_id)
     progress_cb = await _progress_callback(assessment_id)
 
-    async with async_session() as db:
+    async with get_session_maker()() as db:
         # Load assessment
         result = await db.execute(select(Assessment).where(Assessment.id == assessment_uuid))
         assessment = result.scalar_one_or_none()
