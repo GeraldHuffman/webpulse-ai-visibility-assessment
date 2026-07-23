@@ -93,8 +93,9 @@ async def send_report_ready_email(assessment: Assessment, report: Report, settin
 
     html = _report_email_html(assessment, report, settings)
     
-    # Try with the configured from address first
-    from_addr = settings.email_from
+    # Use onboarding@resend.dev until webpulsehq.com is verified in Resend
+    # Once verified, change EMAIL_FROM in Render to: WebPulse <team@webpulsehq.com>
+    from_addr = "WebPulse <onboarding@resend.dev>"
     subject = f"Your AI Visibility Assessment is Ready — Score: {report.visibility_score}/100"
 
     async with httpx.AsyncClient(timeout=15.0) as client:
@@ -112,24 +113,6 @@ async def send_report_ready_email(assessment: Assessment, report: Report, settin
                 "tags": ["assessment", "report-ready"],
             },
         )
-        
-        # If domain not verified, retry with Resend's default sender
-        if resp.status_code == 422 and "webpulsehq.com" in from_addr:
-            logger.warning(f"Email failed with {from_addr}, retrying with onboarding@resend.dev")
-            resp = await client.post(
-                RESEND_API,
-                headers={
-                    "Authorization": f"Bearer {settings.resend_api_key}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "from": "WebPulse <onboarding@resend.dev>",
-                    "to": [assessment.email],
-                    "subject": subject,
-                    "html": html,
-                    "tags": ["assessment", "report-ready"],
-                },
-            )
         if resp.status_code in (200, 202):
             logger.info(f"Report email sent to {assessment.email}")
         else:

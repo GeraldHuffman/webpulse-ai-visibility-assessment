@@ -112,6 +112,8 @@ async def run_assessment(ctx: dict, assessment_id: str) -> None:
                 findings=report_data["findings"],
                 unknowns=report_data["unknowns"],
                 methodology=report_data["methodology"],
+                big_opportunity=report_data.get("big_opportunity", ""),
+                current_state=report_data.get("current_state", ""),
                 llm_raw_response=report_data.get("llm_raw_response"),
                 llm_model=settings.openai_model,
                 llm_tokens_used=report_data.get("llm_tokens_used"),

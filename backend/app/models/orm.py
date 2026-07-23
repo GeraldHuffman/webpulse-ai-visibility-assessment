@@ -73,6 +73,8 @@ class Report(Base):
     summary: Mapped[str] = mapped_column(Text)
     actions: Mapped[list] = mapped_column(JSONB, default=list)
     findings: Mapped[list] = mapped_column(JSONB, default=list)
+    big_opportunity: Mapped[str | None] = mapped_column(Text, nullable=True)
+    current_state: Mapped[str | None] = mapped_column(Text, nullable=True)
     unknowns: Mapped[list] = mapped_column(JSONB, default=list)
     methodology: Mapped[str] = mapped_column(Text)
     llm_raw_response: Mapped[dict | None] = mapped_column(JSONB, nullable=True)

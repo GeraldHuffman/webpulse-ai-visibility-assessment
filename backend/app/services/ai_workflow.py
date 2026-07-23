@@ -53,6 +53,8 @@ class LLMFinding(BaseModel):
 
 class LLMReport(BaseModel):
     visibility_score: int = Field(ge=0, le=100)
+    big_opportunity: str = ""
+    current_state: str = ""
     category_scores: LLMCategoryScore
     summary: str
     actions: list[LLMAction]

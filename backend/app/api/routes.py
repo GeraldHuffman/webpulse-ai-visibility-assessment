@@ -184,6 +184,8 @@ async def get_report(assessment_id: str, db: AsyncSession = Depends(get_db)):
         "findings": report.findings,
         "unknowns": report.unknowns,
         "methodology": report.methodology,
+        "big_opportunity": getattr(report, "big_opportunity", "") or "",
+        "current_state": getattr(report, "current_state", "") or "",
         "generated_at": report.generated_at.isoformat() if report.generated_at else None,
     }
 
