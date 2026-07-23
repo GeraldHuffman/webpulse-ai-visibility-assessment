@@ -75,10 +75,18 @@ export default function Home() {
         assessment.id,
         (data) => setProgress(data),
         () => setTimeout(() => setStep("report"), 500),
-        (err: Error) => setError(err.message),
+        (err: Error) => { const m = err.message; if (m.includes("Failed to fetch") || m.includes("Connection")) { setError("Connection issue — please try again."); } else { setError(m); } },
       );
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : String(err));
+      const msg = err instanceof Error ? err.message : String(err);
+      // Clean up technical error messages
+      if (msg.includes("Invalid URL") || msg.includes("Cannot resolve")) {
+        setError("Please check your website URL — it doesn\'t look valid. Make sure it\'s a real web address like yourcompany.com");
+      } else if (msg.includes("Failed to fetch")) {
+        setError("Connection issue — please try again in a moment.");
+      } else {
+        setError(msg);
+      }
       setStep("business");
     }
   };
