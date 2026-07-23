@@ -20,14 +20,30 @@ logger = get_logger()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info(f"Starting WebPulse Assessment API ({settings.app_env})")
-    # Auto-create tables on startup
+    # Auto-create tables and add missing columns on startup
     try:
         engine = get_engine()
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            # Add missing columns to existing tables (create_all won't do this)
+            from sqlalchemy import text, inspect
+            def add_missing_columns(sync_conn):
+                inspector = inspect(sync_conn)
+                # Check reports table for new columns
+                if 'reports' in inspector.get_table_names():
+                    existing_cols = [c['name'] for c in inspector.get_columns('reports')]
+                    missing = []
+                    if 'big_opportunity' not in existing_cols:
+                        missing.append("ALTER TABLE reports ADD COLUMN big_opportunity TEXT")
+                    if 'current_state' not in existing_cols:
+                        missing.append("ALTER TABLE reports ADD COLUMN current_state TEXT")
+                    for sql in missing:
+                        sync_conn.execute(text(sql))
+                        logger.info(f"Added column: {sql}")
+            await conn.run_sync(add_missing_columns)
         logger.info("Database tables created/verified")
     except Exception as e:
-        logger.warning(f"Could not create tables on startup: {e}")
+        logger.warning(f"Could not create/migrate tables on startup: {e}")
     yield
     logger.info("Shutting down WebPulse Assessment API")
 
