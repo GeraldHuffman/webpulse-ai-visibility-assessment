@@ -51,7 +51,6 @@ Assessment URL: {settings.app_url}/report/{assessment.id}
             json={
                 "name": task_name,
                 "description": description,
-                "status": "Assessment Completed",
                 "custom_fields": [
                     {"id": "ai_visibility_score", "value": report.visibility_score},
                 ],
