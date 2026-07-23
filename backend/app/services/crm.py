@@ -51,10 +51,7 @@ Assessment URL: {settings.app_url}/report/{assessment.id}
             json={
                 "name": task_name,
                 "description": description,
-                "custom_fields": [
-                    {"id": "ai_visibility_score", "value": report.visibility_score},
-                ],
-            },
+                            },
         )
         if resp.status_code in (200, 201):
             task = resp.json()
