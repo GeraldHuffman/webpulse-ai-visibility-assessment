@@ -98,6 +98,16 @@ async def send_report_ready_email(assessment: Assessment, report: Report, settin
     from_addr = "WebPulse <onboarding@resend.dev>"
     subject = f"Your AI Visibility Assessment is Ready - Score: {report.visibility_score}/100"
 
+    import json as _json
+    email_payload = {
+        "from": from_addr,
+        "to": [assessment.email],
+        "subject": subject,
+        "html": html,
+        "tags": ["assessment", "report-ready"],
+    }
+    logger.info(f"Resend payload: from={from_addr}, to={assessment.email}, subject_len={len(subject)}, html_len={len(html) if html else 0}")
+    
     async with httpx.AsyncClient(timeout=15.0) as client:
         resp = await client.post(
             RESEND_API,
@@ -105,13 +115,7 @@ async def send_report_ready_email(assessment: Assessment, report: Report, settin
                 "Authorization": f"Bearer {settings.resend_api_key}",
                 "Content-Type": "application/json",
             },
-            json={
-                "from": from_addr,
-                "to": [assessment.email],
-                "subject": subject,
-                "html": html,
-                "tags": ["assessment", "report-ready"],
-            },
+            json=email_payload,
         )
         if resp.status_code in (200, 202):
             logger.info(f"Report email sent to {assessment.email}")
