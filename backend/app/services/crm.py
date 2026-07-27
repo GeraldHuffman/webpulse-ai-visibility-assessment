@@ -1,4 +1,4 @@
-"""ClickUp CRM integration — create tasks for new leads."""
+"""ClickUp CRM integration - create tasks for new leads."""
 
 import httpx
 from loguru import logger
@@ -19,7 +19,7 @@ async def sync_to_clickup(assessment: Assessment, report: Report) -> str | None:
         logger.info("ClickUp sync skipped: not configured")
         return None
 
-    task_name = f"{assessment.company_name} — AI Visibility Score: {report.visibility_score}/100"
+    task_name = f"{assessment.company_name} - AI Visibility Score: {report.visibility_score}/100"
 
     description = f"""AI Visibility Assessment Lead
 

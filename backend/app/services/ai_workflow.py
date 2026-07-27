@@ -1,7 +1,7 @@
-"""AI Workflow — generates the AI Visibility Assessment report using GPT-4o.
+"""AI Workflow - generates the AI Visibility Assessment report using GPT-4o.
 
 Anti-fabrication guardrails:
-1. LLM is given structured signal data only — no web browsing tools
+1. LLM is given structured signal data only - no web browsing tools
 2. Response must match Pydantic schema (structured output)
 3. Fact-check pass cross-references every finding against raw signals
 4. Unknowns are explicitly listed
@@ -123,18 +123,18 @@ SCORING RUBRIC (10 categories, each /10, total /100):
 
 SYSTEM_PROMPT = """You are an AI visibility analyst for WebPulse. Your job is to analyze website signals and questionnaire answers to produce an AI Visibility Assessment report that feels like a personalized audit, not a generic checklist.
 
-TONE: Confident, specific, and narrative. Write like a consultant who has actually looked at this website and has something real to say. Use plain English. Talk about "AI discovery" — whether AI tools can find, understand, and recommend the business. Do NOT use terms like "SEO", "GEO", "AEO", "backlinks", "domain authority", or "SERP".
+TONE: Confident, specific, and narrative. Write like a consultant who has actually looked at this website and has something real to say. Use plain English. Talk about "AI discovery" - whether AI tools can find, understand, and recommend the business. Do NOT use terms like "SEO", "GEO", "AEO", "backlinks", "domain authority", or "SERP".
 
 Rules:
 1. ONLY use the observable signals and user inputs provided to you. Do NOT invent facts, metrics, or findings.
 2. NEVER fabricate observations that are not present in the provided data.
 3. If data is unknown or missing, say so explicitly and add it to the unknowns list.
-4. Score each category based on the rubric. Be conservative — if a signal is unknown, score 5/10 and note it in unknowns.
+4. Score each category based on the rubric. Be conservative - if a signal is unknown, score 5/10 and note it in unknowns.
 5. Generate 3-5 prioritized actions. Each should explain what to do, why it matters for AI discovery, and what the impact is.
 6. Write a 3-4 sentence personalized summary that names the company and talks about their specific situation.
-7. Write a "big_opportunity" section (3-4 sentences) that frames the biggest opportunity for this specific business — what could change if they improve their AI visibility. Reference their industry and goals.
+7. Write a "big_opportunity" section (3-4 sentences) that frames the biggest opportunity for this specific business - what could change if they improve their AI visibility. Reference their industry and goals.
 8. Write a "current_state" section (3-4 sentences) that honestly describes where they stand today with AI discovery, referencing specific signals you found.
-9. In findings, be specific and contextual. Don't just say "llms.txt exists" — say what it means for this business and whether it's helping or hurting AI discovery. Reference competitors if the user provided them.
+9. In findings, be specific and contextual. Don't just say "llms.txt exists" - say what it means for this business and whether it's helping or hurting AI discovery. Reference competitors if the user provided them.
 10. Reference the company's industry, target audience, and goals throughout the report to make it feel personalized.
 
 Output format: structured JSON matching the provided schema."""
@@ -392,7 +392,7 @@ def fact_check(report: dict[str, Any], signals: dict[str, Any]) -> dict[str, Any
         for bot_name in ["GPTBot", "ClaudeBot", "PerplexityBot", "Google-Extended"]:
             if bot_name.lower() in observation and bot_name in bot_blocks:
                 if bot_blocks[bot_name] is None:
-                    # We don't actually know — don't let the LLM claim it does
+                    # We don't actually know - don't let the LLM claim it does
                     if "allowed" in observation or "blocked" in observation:
                         finding["observation"] = finding["observation"].replace(
                             "is allowed", "status unknown"

@@ -1,4 +1,4 @@
-"""Resend email integration — transactional emails."""
+"""Resend email integration - transactional emails."""
 
 import httpx
 from loguru import logger
@@ -75,7 +75,7 @@ def _report_email_html(assessment: Assessment, report: Report, settings: Setting
     </div>
 
     <p style="color:#555; font-size:12px; text-align:center; margin-top:32px;">
-      WebPulse — AI Visibility Assessment<br>
+      WebPulse - AI Visibility Assessment<br>
       <a href="{settings.app_url}/report/{assessment.id}" style="color:#7209B7;">View your report</a>
     </p>
   </div>
