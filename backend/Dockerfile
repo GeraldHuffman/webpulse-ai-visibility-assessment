@@ -1,10 +1,14 @@
-# Cache bust: 2026-07-23-v2
+# Force fresh build - Render cache fix
+ARG BUILD_DATE=default
+
 FROM python:3.13-slim
 
 WORKDIR /app
 
+# Install dependencies - changing this layer forces a fresh build
 RUN pip install --no-cache-dir fastapi uvicorn[standard] httpx beautifulsoup4 lxml pydantic pydantic-settings sqlalchemy asyncpg alembic arq redis openai psycopg2-binary resend python-multipart email-validator loguru tenacity
 
+# Copy all files
 COPY . .
 
 EXPOSE 8000

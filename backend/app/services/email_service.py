@@ -41,7 +41,7 @@ def _report_email_html(assessment: Assessment, report: Report, settings: Setting
     </div>
 
     <div style="padding:24px; background:#1a1a2e; border-radius:12px; margin-bottom:24px;">
-      <p style="color:#ddd; font-size:16px; line-height:1.6;">{report.summary}</p>
+      <p style="color:#ddd; font-size:16px; line-height:1.6;">{report.summary or ""}</p>
     </div>
 
     <div style="padding:20px; background:#15001f; border-radius:12px; margin-bottom:24px; border-left:4px solid #7209B7;">
@@ -96,7 +96,7 @@ async def send_report_ready_email(assessment: Assessment, report: Report, settin
     # Use onboarding@resend.dev until webpulsehq.com is verified in Resend
     # Once verified, change EMAIL_FROM in Render to: WebPulse <team@webpulsehq.com>
     from_addr = "WebPulse <onboarding@resend.dev>"
-    subject = f"Your AI Visibility Assessment is Ready — Score: {report.visibility_score}/100"
+    subject = f"Your AI Visibility Assessment is Ready - Score: {report.visibility_score}/100"
 
     async with httpx.AsyncClient(timeout=15.0) as client:
         resp = await client.post(
@@ -117,4 +117,4 @@ async def send_report_ready_email(assessment: Assessment, report: Report, settin
             logger.info(f"Report email sent to {assessment.email}")
         else:
             logger.error(f"Email send failed: {resp.status_code} - {resp.text[:500]}")
-            logger.error(f"From: {settings.email_from}, To: {assessment.email}")
+            logger.error(f"From: {from_addr}, To: {assessment.email}, Subject: {subject}")
