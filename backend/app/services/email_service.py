@@ -99,26 +99,40 @@ async def send_report_ready_email(assessment: Assessment, report: Report, settin
     subject = f"Your AI Visibility Assessment is Ready - Score: {report.visibility_score}/100"
 
     import json as _json
-    email_payload = {
-        "from": from_addr,
-        "to": [assessment.email],
-        "subject": subject,
-        "html": html,
-        "tags": ["assessment", "report-ready"],
-    }
     logger.info(f"Resend payload: from={from_addr}, to={assessment.email}, subject_len={len(subject)}, html_len={len(html) if html else 0}")
     
-    async with httpx.AsyncClient(timeout=15.0) as client:
-        resp = await client.post(
-            RESEND_API,
-            headers={
-                "Authorization": f"Bearer {settings.resend_api_key}",
-                "Content-Type": "application/json",
-            },
-            json=email_payload,
-        )
-        if resp.status_code in (200, 202):
-            logger.info(f"Report email sent to {assessment.email}")
-        else:
-            logger.error(f"Email send failed: {resp.status_code} - {resp.text[:500]}")
-            logger.error(f"From: {from_addr}, To: {assessment.email}, Subject: {subject}")
+    try:
+        import resend
+        resend.api_key = settings.resend_api_key
+        r = resend.Emails.send({
+            "from": from_addr,
+            "to": [assessment.email],
+            "subject": subject,
+            "html": html,
+        })
+        logger.info(f"Report email sent to {assessment.email} via Resend SDK: {r}")
+    except Exception as e:
+        logger.error(f"Resend SDK error: {type(e).__name__}: {str(e)[:500]}")
+        # Fallback to httpx
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                resp = await client.post(
+                    RESEND_API,
+                    headers={
+                        "Authorization": f"Bearer {settings.resend_api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "from": from_addr,
+                        "to": [assessment.email],
+                        "subject": subject,
+                        "html": html,
+                    },
+                )
+                if resp.status_code in (200, 202):
+                    logger.info(f"Report email sent to {assessment.email} via httpx fallback")
+                else:
+                    logger.error(f"Email send failed: {resp.status_code} - {resp.text[:500]}")
+                    logger.error(f"From: {from_addr}, To: {assessment.email}, Subject: {subject}")
+        except Exception as e2:
+            logger.error(f"Both Resend SDK and httpx failed: {str(e2)[:300]}")
