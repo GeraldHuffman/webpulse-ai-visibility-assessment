@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     calendly_webhook_signing_key: str = ""
 
     resend_api_key: str = ""
+    ubersuggest_access_token: str = ""
+    ubersuggest_refresh_token: str = ""
     email_from: str = "WebPulse <team@webpulsehq.com>"
 
     jwt_secret: str = "dev-only-change-me"

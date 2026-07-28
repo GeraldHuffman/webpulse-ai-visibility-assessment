@@ -252,7 +252,7 @@ export default function Home() {
         <div>
           <div className="space-y-3">
             {[0, 1, 2].map((i) => (
-              <input key={i} type="text" placeholder={`Competitor ${i + 1} (website or name)`}
+              <input key={i} type="text" placeholder={`Competitor ${i + 1} (e.g. competitor.com)`}
                 onChange={(e) => {
                   const comps = [...formData.competitors];
                   comps[i] = e.target.value;

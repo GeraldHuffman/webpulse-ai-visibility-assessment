@@ -12,6 +12,7 @@ from app.core.config import get_settings
 from app.models.database import get_session_maker
 from app.models.orm import Assessment, Report, SiteSignal, Lead
 from app.services.analysis_engine import collect_all_signals
+from app.services.ubersuggest_service import collect_ubersuggest_data
 from app.services.ai_workflow import generate_report
 from app.services.crm import sync_to_clickup
 from app.services.email_service import send_report_ready_email
@@ -86,7 +87,30 @@ async def run_assessment(ctx: dict, assessment_id: str) -> None:
             db.add(signal)
             await db.commit()
 
-            # Step 2: Generate report
+            # Step 2: Collect Ubersuggest data
+            await progress_cb("Pulling competitor data and keyword metrics...")
+            try:
+                # Extract domain from website URL
+                from urllib.parse import urlparse
+                parsed = urlparse(assessment.website_url)
+                target_domain = parsed.hostname or assessment.website_url
+
+                # Extract competitor domains
+                competitor_domains = []
+                for comp in assessment.competitors or []:
+                    if comp.startswith("http"):
+                        comp_parsed = urlparse(comp)
+                        competitor_domains.append(comp_parsed.hostname or comp)
+                    elif "." in comp:  # Looks like a domain
+                        competitor_domains.append(comp)
+
+                ubersuggest_data = await collect_ubersuggest_data(target_domain, competitor_domains)
+                logger.info(f"Ubersuggest data collected for {target_domain}")
+            except Exception as e:
+                logger.warning(f"Ubersuggest data collection failed (non-blocking): {e}")
+                ubersuggest_data = {}
+
+            # Step 3: Generate report
             await progress_cb("Generating your personalized report...")
             assessment_dict = {
                 "company_name": assessment.company_name,
@@ -100,7 +124,7 @@ async def run_assessment(ctx: dict, assessment_id: str) -> None:
                 "goals": assessment.goals,
             }
 
-            report_data = await generate_report(signals_data, assessment_dict)
+            report_data = await generate_report(signalsuggest_data, assessment_dict, ubersuggest_data)
 
             # Save report
             report = Report(

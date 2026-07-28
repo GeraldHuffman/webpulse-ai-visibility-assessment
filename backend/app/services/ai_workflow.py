@@ -211,7 +211,47 @@ def _format_signals_for_prompt(signals: dict[str, Any], assessment_data: dict[st
         f"Pages: {sitemap.get('page_urls', 0)}"
     )
 
-    return f"""WEBSITE SIGNALS (observable data collected via HTTP):
+    # Format Ubersuggest data if available
+    ubersuggest_section = ""
+    if ubersuggest_data:
+        ubersuggest_section = "\n\nUBERSUGGEST DATA (real SEO metrics from Ubersuggest API):\n"
+        
+        target = ubersuggest_data.get("target_overview")
+        if target:
+            ubersuggest_section += f"""=== Target Domain Overview ===
+Domain: {target.get("domain", "unknown")}
+Organic keywords: {target.get("organic", "unknown")}
+Monthly organic traffic: {target.get("traffic", "unknown")}
+Domain authority: {target.get("domainAuthority", "unknown")}
+Total backlinks: {target.get("backlinks", "unknown")}
+Referring domains: {target.get("refDomains", "unknown")}
+"""
+        
+        keywords = ubersuggest_data.get("target_keywords")
+        if keywords and isinstance(keywords, list):
+            ubersuggest_section += "\n=== Top Organic Keywords ===\n"
+            for kw in keywords[:10]:
+                if isinstance(kw, dict):
+                    ubersuggest_section += f"  {kw.get('keyword', 'unknown')} - volume: {kw.get('volume', '?')}, position: {kw.get('position', '?')}, difficulty: {kw.get('difficulty', '?')}\n"
+        
+        backlinks = ubersuggest_data.get("target_backlinks")
+        if backlinks and isinstance(backlinks, dict):
+            ubersuggest_section += f"""\n=== Backlinks Overview ===
+Total backlinks: {backlinks.get("totalBacklinks", backlinks.get("backlinks", "unknown"))}
+Referring domains: {backlinks.get("refDomains", "unknown")}
+Domain authority: {backlinks.get("domainAuthority", "unknown")}
+"""
+        
+        competitors = ubersuggest_data.get("competitors", [])
+        if competitors:
+            ubersuggest_section += "\n=== Competitor Analysis (Real Data) ===\n"
+            for comp in competitors:
+                overview = comp.get("overview", {})
+                ubersuggest_section += f"""  {comp["domain"]}: {overview.get("organic", "?")} keywords, {overview.get("traffic", "?")} traffic, DA {overview.get("domainAuthority", "?")}, {overview.get("backlinks", "?")} backlinks\n"""
+        
+        ubersuggest_section += "\nIMPORTANT: Use this REAL Ubersuggest data in your report. Reference specific numbers (traffic, keywords, DA, backlinks) when discussing the site and competitors. This is real data, not hypothetical."
+
+    return f"""{ubersuggest_section}\n\nWEBSITE SIGNALS (observable data collected via HTTP):
 
 === AI Crawler Access ===
 {bot_section}
@@ -252,6 +292,7 @@ Time to First Byte (TTFB): {ttfb}ms
 - Brand mention check uses DuckDuckGo as a proxy, not exhaustive
 - AI search presence score is estimated from indirect signals, not directly tested
 
+{ubersuggest_section}\n
 QUESTIONNAIRE ANSWERS (user-provided):
 - Company name: {assessment_data.get("company_name", "")}
 - Website: {assessment_data.get("website_url", "")}
@@ -303,7 +344,7 @@ Generate the report as structured JSON matching this schema:
 }}"""
 
 
-async def generate_report(signals: dict[str, Any], assessment_data: dict[str, Any]) -> dict[str, Any]:
+async def generate_report(signals: dict[str, Any], assessment_data: dict[str, Any], ubersuggest_data: dict[str, Any] | None = None) -> dict[str, Any]:
     """Generate the AI Visibility Assessment report using GPT-4o.
 
     Args:
