@@ -65,7 +65,7 @@ async def get_domain_overview(domain: str) -> dict | None:
     """Get domain overview: traffic, keywords, DA, backlinks."""
     result = await _call_mcp("domain_overview", {"domain": domain})
     if result:
-        logger.info(f"Ubersuggest: {domain} - {result.get("organic", "?")} keywords, {result.get("traffic", "?")} traffic, DA {result.get("domainAuthority", "?")}")
+        logger.info(f"Ubersuggest: {domain} - {result.get('organic', '?')} keywords, {result.get('traffic', '?')} traffic, DA {result.get('domainAuthority', '?')}")
     return result
 
 

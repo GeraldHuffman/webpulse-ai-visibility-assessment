@@ -247,7 +247,7 @@ Domain authority: {backlinks.get("domainAuthority", "unknown")}
             ubersuggest_section += "\n=== Competitor Analysis (Real Data) ===\n"
             for comp in competitors:
                 overview = comp.get("overview", {})
-                ubersuggest_section += f"""  {comp["domain"]}: {overview.get("organic", "?")} keywords, {overview.get("traffic", "?")} traffic, DA {overview.get("domainAuthority", "?")}, {overview.get("backlinks", "?")} backlinks\n"""
+                ubersuggest_section += f'''  {comp["domain"]}: {overview.get("organic", "?")} keywords, {overview.get("traffic", "?")} traffic, DA {overview.get("domainAuthority", "?")}, {overview.get("backlinks", "?")} backlinks\n'''
         
         ubersuggest_section += "\nIMPORTANT: Use this REAL Ubersuggest data in your report. Reference specific numbers (traffic, keywords, DA, backlinks) when discussing the site and competitors. This is real data, not hypothetical."
 
