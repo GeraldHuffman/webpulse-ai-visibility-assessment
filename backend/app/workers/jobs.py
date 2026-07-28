@@ -124,7 +124,7 @@ async def run_assessment(ctx: dict, assessment_id: str) -> None:
                 "goals": assessment.goals,
             }
 
-            report_data = await generate_report(signalsuggest_data, assessment_dict, ubersuggest_data)
+            report_data = await generate_report(signals_data, assessment_dict, ubersuggest_data)
 
             # Save report
             report = Report(
