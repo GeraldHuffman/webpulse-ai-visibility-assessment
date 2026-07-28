@@ -1,6 +1,7 @@
 """Background jobs for site analysis and report generation."""
 
 import uuid
+import httpx
 from typing import Any
 
 from arq.connections import RedisSettings
@@ -12,12 +13,70 @@ from app.core.config import get_settings
 from app.models.database import get_session_maker
 from app.models.orm import Assessment, Report, SiteSignal, Lead
 from app.services.analysis_engine import collect_all_signals
-from app.services.ubersuggest_service import collect_ubersuggest_data
 from app.services.ai_workflow import generate_report
 from app.services.crm import sync_to_clickup
 from app.services.email_service import send_report_ready_email
 
 settings = get_settings()
+
+# Ubersuggest MCP - inline to avoid import issues
+MCP_URL = "https://ubersuggest-mcp.neilpatelapi.com/mcp"
+
+
+async def _call_ubersuggest_mcp(tool_name: str, arguments: dict):
+    import json as _json
+    if not settings.ubersuggest_access_token:
+        return None
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            resp = await client.post(
+                MCP_URL,
+                json={"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                      "params": {"name": tool_name, "arguments": arguments}},
+                headers={"Content-Type": "application/json",
+                         "Accept": "application/json, text/event-stream",
+                         "Authorization": f"Bearer {settings.ubersuggest_access_token}"},
+            )
+            for line in resp.text.split("\n"):
+                if line.startswith("data: "):
+                    d = _json.loads(line[6:])
+                    content = d.get("result", {}).get("content", [])
+                    if content:
+                        return _json.loads(content[0]["text"])
+        return None
+    except Exception as e:
+        logger.warning(f"Ubersuggest MCP {tool_name} failed: {e}")
+        return None
+
+
+async def collect_ubersuggest_data_inline(domain: str, competitor_domains=None):
+    import asyncio
+    domain = domain.replace("https://", "").replace("http://", "").split("/")[0].replace("www.", "")
+    logger.info(f"Collecting Ubersuggest data for {domain}")
+    
+    results = {}
+    
+    # Get domain overview
+    results["target_overview"] = await _call_ubersuggest_mcp("domain_overview", {"domain": domain})
+    
+    # Get top keywords
+    results["target_keywords"] = await _call_ubersuggest_mcp("domain_keywords", {"domain": domain, "limit": 10})
+    
+    # Get backlinks
+    results["target_backlinks"] = await _call_ubersuggest_mcp("backlinks_overview", {"domain": domain})
+    
+    # Get competitor data
+    competitors = []
+    if competitor_domains:
+        for comp in competitor_domains[:3]:
+            comp_clean = comp.replace("https://", "").replace("http://", "").split("/")[0].replace("www.", "")
+            overview = await _call_ubersuggest_mcp("domain_overview", {"domain": comp_clean})
+            if overview:
+                competitors.append({"domain": comp_clean, "overview": overview})
+    results["competitors"] = competitors
+    
+    logger.info(f"Ubersuggest data collected: target={'yes' if results.get('target_overview') else 'no'}, competitors={len(competitors)}")
+    return results
 
 # In-memory progress tracking (for SSE)
 _progress: dict[str, dict] = {}
@@ -104,7 +163,7 @@ async def run_assessment(ctx: dict, assessment_id: str) -> None:
                     elif "." in comp:  # Looks like a domain
                         competitor_domains.append(comp)
 
-                ubersuggest_data = await collect_ubersuggest_data(target_domain, competitor_domains)
+                ubersuggest_data = await collect_ubersuggest_data_inline(target_domain, competitor_domains)
                 logger.info(f"Ubersuggest data collected for {target_domain}")
             except Exception as e:
                 logger.warning(f"Ubersuggest data collection failed (non-blocking): {e}")
