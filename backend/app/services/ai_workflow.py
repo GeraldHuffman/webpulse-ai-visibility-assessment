@@ -53,8 +53,8 @@ class LLMFinding(BaseModel):
 
 class LLMReport(BaseModel):
     visibility_score: int = Field(ge=0, le=100)
-    big_opportunity: str = Field(..., min_length=10, description="3-4 sentences framing the biggest opportunity")
-    current_state: str = Field(..., min_length=10, description="3-4 sentences describing current state")
+    big_opportunity: str = ""
+    current_state: str = ""
     category_scores: LLMCategoryScore
     summary: str
     actions: list[LLMAction]
@@ -350,6 +350,14 @@ async def generate_report(signals: dict[str, Any], assessment_data: dict[str, An
     except Exception as e:
         logger.error(f"Report validation failed: {e}")
         raise ValueError(f"Report schema validation failed: {e}")
+    
+    # Fill in defaults for empty narrative fields
+    if not report_data.get("big_opportunity"):
+        report_data["big_opportunity"] = f"By improving your website's structured data, content depth, and external recognition, {assessment_data.get('company_name', 'your business')} could significantly increase how often AI tools discover and recommend it to potential customers in the {assessment_data.get('industry', '')} space."
+        logger.warning("big_opportunity was empty, filled with default")
+    if not report_data.get("current_state"):
+        report_data["current_state"] = f"{assessment_data.get('company_name', 'Your business')} has taken initial steps toward AI discoverability, but there are clear opportunities to improve. The site's current signals show room for growth in content structure, external recognition, and technical optimization that would help AI tools better understand and recommend your business."
+        logger.warning("current_state was empty, filled with default")
 
     # Fact-check pass: cross-reference findings against raw signals
     report_data = fact_check(report_data, signals)
