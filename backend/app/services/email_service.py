@@ -60,17 +60,17 @@ def _report_email_html(assessment: Assessment, report: Report, settings: Setting
     </table>
 
     <div style="text-align:center; padding:32px; margin-top:32px;">
-      <a href="{settings.app_url}/report/{assessment.id}"
+      <a href="https://webpulsehq.com/book-a-strategy-call/"
          style="display:inline-block; padding:16px 48px; background:linear-gradient(135deg, #F72585, #7209B7); color:#fff; text-decoration:none; font-size:18px; font-weight:bold; border-radius:8px;">
-        View Full Report
+        Book Your Strategy Call
       </a>
     </div>
 
     <div style="text-align:center; padding:24px; background:#15001f; border-radius:12px; margin-top:32px;">
       <p style="color:#ddd; font-size:16px;">Want to talk through your results?</p>
-      <a href="{settings.app_url}/report/{assessment.id}?action=schedule"
+      <a href="https://webpulsehq.com/book-a-strategy-call/"
          style="display:inline-block; padding:12px 32px; background:#00d4a1; color:#0d0d1a; text-decoration:none; font-size:16px; font-weight:bold; border-radius:8px; margin-top:12px;">
-        Book a Strategy Session
+        Schedule a Call
       </a>
     </div>
 

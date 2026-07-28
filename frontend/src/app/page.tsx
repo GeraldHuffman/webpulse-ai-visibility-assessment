@@ -340,9 +340,9 @@ export default function Home() {
             your top opportunities, and a plan to get AI tools discovering and recommending your business.
           </p>
           {/* Calendly embed */}
-          <div className="bg-webpulse-card rounded-2xl p-2">
-            <div className="calendly-inline-widget" data-url="https://calendly.com/gerald-webpulse/30min"
-              style={{ minWidth: 320, height: 700 }} />
+          <div className="bg-webpulse-card rounded-2xl p-2 min-h-[700px]">
+            <div id="calendly-embed" style={{ minWidth: 320, height: 700 }} />
+          <CalendlyEmbed />
           </div>
           <p className="text-gray-500 text-sm mt-4">
             Prefer email? Your full report has been sent to your inbox.
@@ -541,4 +541,35 @@ function ReportPage({ assessmentId, onSchedule }: { assessmentId: string; onSche
       </div>
     </div>
   );
+}
+
+
+// --- Calendly Loader Component ---
+function CalendlyEmbed() {
+  useEffect(() => {
+    // Load Calendly script if not already loaded
+    if (!document.getElementById("calendly-script")) {
+      const script = document.createElement("script");
+      script.id = "calendly-script";
+      script.src = "https://assets.calendly.com/assets/external/widget.js";
+      script.async = true;
+      document.head.appendChild(script);
+    }
+    
+    // Initialize the widget once the script is loaded
+    const initWidget = () => {
+      if (typeof (window as any).Calendly !== "undefined") {
+        (window as any).Calendly.initInlineWidget({
+          url: "https://calendly.com/gerald-webpulse/30min",
+          parentElement: document.getElementById("calendly-embed"),
+          prefill: {},
+        });
+      } else {
+        setTimeout(initWidget, 200);
+      }
+    };
+    initWidget();
+  }, []);
+
+  return null;
 }
