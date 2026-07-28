@@ -53,8 +53,8 @@ class LLMFinding(BaseModel):
 
 class LLMReport(BaseModel):
     visibility_score: int = Field(ge=0, le=100)
-    big_opportunity: str = ""
-    current_state: str = ""
+    big_opportunity: str = Field(..., min_length=10, description="3-4 sentences framing the biggest opportunity")
+    current_state: str = Field(..., min_length=10, description="3-4 sentences describing current state")
     category_scores: LLMCategoryScore
     summary: str
     actions: list[LLMAction]
@@ -132,8 +132,8 @@ Rules:
 4. Score each category based on the rubric. Be conservative - if a signal is unknown, score 5/10 and note it in unknowns.
 5. Generate 3-5 prioritized actions. Each should explain what to do, why it matters for AI discovery, and what the impact is.
 6. Write a 3-4 sentence personalized summary that names the company and talks about their specific situation.
-7. Write a "big_opportunity" section (3-4 sentences) that frames the biggest opportunity for this specific business - what could change if they improve their AI visibility. Reference their industry and goals.
-8. Write a "current_state" section (3-4 sentences) that honestly describes where they stand today with AI discovery, referencing specific signals you found.
+7. Write a "big_opportunity" field - 3-4 sentences framing the biggest opportunity for THIS specific business. What could change if they improve their AI visibility? Reference their industry, competitors, and goals. This field is REQUIRED and must not be empty.
+8. Write a "current_state" field - 3-4 sentences honestly describing where they stand today with AI discovery. Reference specific signals you found (e.g., "Your robots.txt blocks GPTBot" or "Your homepage clearly states your target customer"). This field is REQUIRED and must not be empty.
 9. In findings, be specific and contextual. Don't just say "llms.txt exists" - say what it means for this business and whether it's helping or hurting AI discovery. Reference competitors if the user provided them.
 10. Reference the company's industry, target audience, and goals throughout the report to make it feel personalized.
 
