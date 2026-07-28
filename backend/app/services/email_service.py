@@ -95,7 +95,7 @@ async def send_report_ready_email(assessment: Assessment, report: Report, settin
     
     # Use onboarding@resend.dev until webpulsehq.com is verified in Resend
     # Once verified, change EMAIL_FROM in Render to: WebPulse <team@webpulsehq.com>
-    from_addr = "onboarding@resend.dev"
+    from_addr = "team@webpulsehq.com"
     subject = f"Your AI Visibility Assessment is Ready - Score: {report.visibility_score}/100"
 
     import json as _json
