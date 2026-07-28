@@ -147,8 +147,9 @@ async def run_assessment(ctx: dict, assessment_id: str) -> None:
             await db.commit()
 
             # Step 2: Collect Ubersuggest data
-            await progress_cb("Pulling competitor data and keyword metrics...")
+            ubersuggest_data = {}
             try:
+                await progress_cb("Pulling competitor data and keyword metrics...")
                 # Extract domain from website URL
                 from urllib.parse import urlparse
                 parsed = urlparse(assessment.website_url)
