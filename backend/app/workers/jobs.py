@@ -115,6 +115,8 @@ async def run_assessment(ctx: dict, assessment_id: str) -> None:
         assessment.status = "analyzing"
         await db.commit()
 
+        ubersuggest_data: dict[str, Any] = {}
+
         try:
             # Step 1: Collect signals
             await progress_cb("Checking if AI tools can find your site...")
@@ -147,7 +149,6 @@ async def run_assessment(ctx: dict, assessment_id: str) -> None:
             await db.commit()
 
             # Step 2: Collect Ubersuggest data
-            ubersuggest_data = {}
             try:
                 await progress_cb("Pulling competitor data and keyword metrics...")
                 # Extract domain from website URL
@@ -168,7 +169,6 @@ async def run_assessment(ctx: dict, assessment_id: str) -> None:
                 logger.info(f"Ubersuggest data collected for {target_domain}")
             except Exception as e:
                 logger.warning(f"Ubersuggest data collection failed (non-blocking): {e}")
-                ubersuggest_data = {}
 
             # Step 3: Generate report
             await progress_cb("Generating your personalized report...")

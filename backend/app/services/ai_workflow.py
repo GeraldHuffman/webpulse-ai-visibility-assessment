@@ -140,7 +140,11 @@ Rules:
 Output format: structured JSON matching the provided schema."""
 
 
-def _format_signals_for_prompt(signals: dict[str, Any], assessment_data: dict[str, Any]) -> str:
+def _format_signals_for_prompt(
+    signals: dict[str, Any],
+    assessment_data: dict[str, Any],
+    ubersuggest_data: dict[str, Any] | None = None,
+) -> str:
     """Format all signals and questionnaire answers into structured context for the LLM."""
 
     # AI bot access summary
@@ -251,7 +255,7 @@ Domain authority: {backlinks.get("domainAuthority", "unknown")}
         
         ubersuggest_section += "\nIMPORTANT: Use this REAL Ubersuggest data in your report. Reference specific numbers (traffic, keywords, DA, backlinks) when discussing the site and competitors. This is real data, not hypothetical."
 
-    return f"""{ubersuggest_section}\n\nWEBSITE SIGNALS (observable data collected via HTTP):
+    return f"""WEBSITE SIGNALS (observable data collected via HTTP):
 
 === AI Crawler Access ===
 {bot_section}
@@ -350,6 +354,7 @@ async def generate_report(signals: dict[str, Any], assessment_data: dict[str, An
     Args:
         signals: Collected site signals from the analysis engine
         assessment_data: User questionnaire answers
+        ubersuggest_data: Optional real SEO metrics from the Ubersuggest MCP
 
     Returns:
         Dict with: visibility_score, category_scores, summary, actions,
@@ -359,7 +364,7 @@ async def generate_report(signals: dict[str, Any], assessment_data: dict[str, An
         raise RuntimeError("OPENAI_API_KEY is not configured")
 
     client = AsyncOpenAI(api_key=settings.openai_api_key)
-    user_prompt = _format_signals_for_prompt(signals, assessment_data)
+    user_prompt = _format_signals_for_prompt(signals, assessment_data, ubersuggest_data)
 
     logger.info(f"Generating report with {settings.openai_model}")
 
